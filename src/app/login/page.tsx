@@ -1,17 +1,46 @@
 'use client';
 
+import axios from 'axios';
 import Link from 'next/link';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 function Login() {
+  const router = useRouter();
   const [user, setUser] = useState({
     email: '',
     password: ''
   });
 
-  const onLogin = () => {
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const onLogin = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.post('./api/users/login', user);
+      console.log(response.data);
+
+      toast.success('Login successful!');
+      router.push('/');
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        toast.error(error.response?.data?.message || 'Login failed!');
+      } else {
+        console.error('An unexpected error occurred');
+        toast.error('An unexpected error occurred');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
+
+  useEffect(() => {
+    const { email, password } = user;
+    setIsButtonDisabled(!(email && password));
+  }, [user]);
+
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gray-300'>
       <h1 className='text-3xl mb-4'>Login</h1>
@@ -44,10 +73,12 @@ function Login() {
       <button 
       type='submit' 
       className='bg-gray-800 text-white m-4 px-4 py-2 rounded-md' 
-      onClick={onLogin}>
-        Login
+      onClick={onLogin}
+      disabled={isButtonDisabled || isLoading}
+      >
+        {isLoading ? 'Loading...' : 'Signup'}
       </button>
-      <Link href='signup'>got to signup</Link>
+      <Link href='signup' className="text-blue-500 hover:underline">got to signup</Link>
     </div>
   )
 }

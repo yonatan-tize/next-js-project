@@ -28,10 +28,16 @@ export async function POST(request: NextRequest){
       username: user.username,
       email: user.email
     }
-    const accessToken = await jwt.sign(payload, process.env.JWT_SECRET_KEY!, {expiresIn: '1d'})
+    const accessToken = await jwt.sign(payload, process.env.JWT_SECRET_KEY!, {expiresIn: '1d'});
+
+    const response = NextResponse.json({
+      message: "login successful",
+      success: true
+    });
+    response.cookies.set("token", accessToken, {httpOnly: true})
+    return response
   
   } catch (error) {
     return NextResponse.json({ error}, {status: 500});
-    
   }
 } 
